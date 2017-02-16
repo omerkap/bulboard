@@ -99,3 +99,14 @@ class SRDriver(object):
             sleep(1)
             self.write_zeros()
             sleep(1)
+
+
+if __name__ == '__main__':
+    driver = SRDriver(board_num_of_regs=56,
+                      board_num_of_active_regs=50,
+                      board_starting_reg=6,
+                      total_num_of_regs=100,
+                      clk_pin=11,
+                      store_pin=12,
+                      data_pin=13)
+    driver.blink()
