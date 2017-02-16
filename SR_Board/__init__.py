@@ -15,7 +15,7 @@ class SRDriver(object):
     # the 7th reg, use board_starting_reg = 6
     def __init__(self, board_num_of_regs, board_num_of_active_regs, board_starting_reg, total_num_of_regs, clk_pin, store_pin, data_pin):
         self._num_of_boards = int(total_num_of_regs)/int(board_num_of_active_regs)
-        self._flip_pairs = flip_pairs
+        #self._flip_pairs = flip_pairs
         self._board_starting_reg = board_starting_reg
         self._board_num_of_regs = board_num_of_regs
         self.clk_pin = clk_pin
@@ -53,7 +53,7 @@ class SRDriver(object):
         write 0 to all registers
         :return:
         """
-        for i in range(self._num_of_boards * 50):
+        for i in range(self._num_of_boards * self._board_num_of_regs):
             self.shift_data(0)
 
         self.load_output()
@@ -83,10 +83,10 @@ class SRDriver(object):
         GPIO.output(self.store_pin, 0)
 
     def write_ones(self):
-        self.write_list(list=[1]* 50)
+        self.write_list(list=[1]* self._board_num_of_regs)
 
     def write_zeros(self):
-        self.write_list(list=[0] * 50)
+        self.write_list(list=[0] * self._board_num_of_regs)
 
     def write_list(self, list):
         for d in list:
@@ -100,6 +100,13 @@ class SRDriver(object):
             self.write_zeros()
             sleep(1)
 
+    def one_by_one(self):
+        
+        for i in range(self._board_num_of_regs):
+            data = [0] * self._board_num_of_regs
+            data[i] = 1
+            self.write_list(list=data)
+            sleep(0.2)
 
 if __name__ == '__main__':
     driver = SRDriver(board_num_of_regs=56,
@@ -109,4 +116,5 @@ if __name__ == '__main__':
                       clk_pin=11,
                       store_pin=12,
                       data_pin=13)
-    driver.blink()
+    #driver.blink()
+    driver.one_by_one()
