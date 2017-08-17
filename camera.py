@@ -1,6 +1,6 @@
 #!/usr/bin/python
 import os
-import pygame, sys
+import pygame
 
 from pygame.locals import *
 import pygame.camera
