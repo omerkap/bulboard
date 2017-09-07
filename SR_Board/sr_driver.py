@@ -20,7 +20,7 @@ class SRDriver(object):
         self.data_pin = data_pin
         self.num_of_lines = len(self._index_map)
         self.num_of_columns = len(self._index_map[0])
-        self.data = list(self._num_of_boards * self._board_num_of_regs)
+        self.data = [0] * (self._num_of_boards * self._board_num_of_regs)
         for i in range(0, len(self.data)):
             self.data[i] = 0
 
@@ -74,6 +74,15 @@ class SRDriver(object):
             self.shift_data(data=d)
         self.load_output()
 
+    def test_board(self):
+        for i in range(0, self.num_of_lines):
+            for j in range(0, self.num_of_columns):
+                pic = [self.num_of_columns * [0] for k in range(0, self.num_of_lines)]
+                pic[i][j] = 1
+                self.load_array(picture=pic)
+                print pic
+                sleep(0.2)
+
 
 if __name__ == '__main__':
     driver = SRDriver(board_num_of_regs=56,
@@ -82,3 +91,11 @@ if __name__ == '__main__':
                       store_pin=12,
                       data_pin=13,
                       index_map_file="index_map.csv")
+
+    while True:
+        a = raw_input("press 'd' for demo, 'q' for quit")
+        if a == 'd':
+            driver.test_board()
+        elif a == 'q':
+            exit(0)
+
