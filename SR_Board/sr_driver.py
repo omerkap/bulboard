@@ -80,7 +80,7 @@ class SRDriver(object):
                 pic = [self.num_of_columns * [0] for k in range(0, self.num_of_lines)]
                 pic[i][j] = 1
                 self.load_array(picture=pic)
-                print pic
+                #print pic
                 sleep(0.2)
 
 
@@ -92,10 +92,14 @@ if __name__ == '__main__':
                       data_pin=13,
                       index_map_file="index_map.csv")
 
+    while True:  # for testing just start running the pixel
+        driver.test_board()
+
+    '''
     while True:
         a = raw_input("press 'd' for demo, 'q' for quit")
         if a == 'd':
             driver.test_board()
         elif a == 'q':
             exit(0)
-
+    '''
