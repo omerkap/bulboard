@@ -58,8 +58,11 @@ class SRDriver(object):
         :return:
         """
         GPIO.output(self.data_pin, data)
+        sleep(0.00005)
         GPIO.output(self.clk_pin, 1)
+        sleep(0.00001)
         GPIO.output(self.clk_pin, 0)
+        sleep(0.00001)
 
     def load_output(self):
         """
@@ -67,7 +70,9 @@ class SRDriver(object):
         :return:
         """
         GPIO.output(self.store_pin, 1)
+        sleep(0.00001)
         GPIO.output(self.store_pin, 0)
+        sleep(0.00001)
 
     def write_data(self):
         for d in self.data:
@@ -80,9 +85,27 @@ class SRDriver(object):
                 pic = [self.num_of_columns * [0] for k in range(0, self.num_of_lines)]
                 pic[i][j] = 1
                 self.load_array(picture=pic)
+                self.write_data()
                 #print pic
-                sleep(0.2)
+                sleep(0.05)
 
+    def test_board_no_pic(self):
+        self.shift_data(1)
+        for i in range(0, self._board_num_of_regs * self._num_of_boards):
+            self.shift_data(0)
+            self.load_output()
+            sleep(0.1)
+            
+
+    def test_blink(self):                
+        pic = [self.num_of_columns * [0] for k in range(0, self.num_of_lines)]
+        self.load_array(picture=pic)
+        self.write_data()
+        sleep(0.2)
+        pic = [self.num_of_columns * [1] for k in range(0, self.num_of_lines)]
+        self.load_array(picture=pic)
+        self.write_data()
+        sleep(0.2)
 
 if __name__ == '__main__':
     driver = SRDriver(board_num_of_regs=56,
@@ -93,7 +116,7 @@ if __name__ == '__main__':
                       index_map_file="index_map.csv")
 
     while True:  # for testing just start running the pixel
-        driver.test_board()
+        driver.test_board_no_pic()
 
     '''
     while True:
