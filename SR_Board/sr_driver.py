@@ -1,7 +1,7 @@
 import RPi.GPIO as GPIO
 from time import sleep
 import re
-
+import pprint
 
 class SRDriver(object):
 
@@ -86,12 +86,13 @@ class SRDriver(object):
                 pic[i][j] = 1
                 self.load_array(picture=pic)
                 self.write_data()
-                #print pic
-                sleep(0.05)
+                print '{},{}'.format(i,j)
+                sleep(0.5)
 
     def test_board_no_pic(self):
         self.shift_data(1)
         for i in range(0, self._board_num_of_regs * self._num_of_boards):
+            print 'line {}'.format(i)
             self.shift_data(0)
             self.load_output()
             sleep(0.1)
@@ -107,6 +108,25 @@ class SRDriver(object):
         self.write_data()
         sleep(0.2)
 
+    def light_line(self, line):
+        pic = []
+        for i in range(self.num_of_lines):
+            if i == line:
+               pic.append(self.num_of_columns * [1])
+            else:
+               pic.append(self.num_of_columns * [0])
+        return pic
+
+    def test_lines(self):
+        for i in range(self.num_of_lines):
+           print 'line: {}'.format(i)
+           
+           pic = self.light_line(line=i)
+           pprint.pprint(pic)
+           self.load_array(pic)
+           self.write_data()
+           sleep(10) 
+
 if __name__ == '__main__':
     driver = SRDriver(board_num_of_regs=56,
                       num_of_boards=4,
@@ -115,8 +135,9 @@ if __name__ == '__main__':
                       data_pin=13,
                       index_map_file="index_map.csv")
 
+    
     while True:  # for testing just start running the pixel
-        driver.test_board_no_pic()
+        driver.test_board()
 
     '''
     while True:
