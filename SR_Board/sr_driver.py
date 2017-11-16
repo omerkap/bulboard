@@ -90,12 +90,13 @@ class SRDriver(object):
                 sleep(0.5)
 
     def test_board_no_pic(self):
-        self.shift_data(1)
-        for i in range(0, self._board_num_of_regs * self._num_of_boards):
-            print 'line {}'.format(i)
-            self.shift_data(0)
+        for d in range(2):
+            for i in range(0, self._board_num_of_regs * self._num_of_boards):
+                print 'line {}'.format(i)
+                self.shift_data(d)
+        
             self.load_output()
-            sleep(0.1)
+            sleep(2)
             
 
     def test_blink(self):                
@@ -117,6 +118,21 @@ class SRDriver(object):
                pic.append(self.num_of_columns * [0])
         return pic
 
+    def light_column(self, c):
+        pic = []
+        for i in range(self.num_of_lines):
+            line = [0] * self.num_of_columns
+            line[c] = 1
+            pic.append(line)
+        return pic
+    
+    def test_columns(self):
+        for i in range(self.num_of_columns):
+            pic = self.light_column(i)
+            self.load_array(pic)
+            self.write_data()
+            sleep(1)
+ 
     def test_lines(self):
         for i in range(self.num_of_lines):
            print 'line: {}'.format(i)
@@ -125,7 +141,7 @@ class SRDriver(object):
            pprint.pprint(pic)
            self.load_array(pic)
            self.write_data()
-           sleep(10) 
+           sleep(1) 
 
 if __name__ == '__main__':
     driver = SRDriver(board_num_of_regs=56,
@@ -137,8 +153,10 @@ if __name__ == '__main__':
 
     
     while True:  # for testing just start running the pixel
-        driver.test_board()
-
+        #driver.test_board()
+        #driver.test_lines()
+        #driver.test_columns()  
+        driver.test_board_no_pic()
     '''
     while True:
         a = raw_input("press 'd' for demo, 'q' for quit")
