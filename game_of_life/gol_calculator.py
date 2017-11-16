@@ -5,8 +5,13 @@ import numpy as np
 from datetime import datetime
 import os
 import time
-import matplotlib.pyplot as plt
-from matplotlib import animation
+try:
+    import matplotlib.pyplot as plt
+    from matplotlib import animation
+except Exception:
+    pass
+import sys
+sys.path.append(r'../')
 from SR_Board.sr_driver import SRDriver
 
 
@@ -181,17 +186,18 @@ if __name__ == '__main__':
                              clk_pin=11,
                              store_pin=12,
                              data_pin=13,
-                             index_map_file=os.path.join('SR_Board', 'index_map.csv'))
+                             index_map_file=os.path.join('..', 'SR_Board', 'index_map.csv'))
 
-    plt.ion()
-    f = plt.figure()
+    #plt.ion()
+    #f = plt.figure()
 
     for i in range(200):
         state = gol_obj.state
         step = gol_obj.step
         l.info('step: {}'.format(step))
         t0 = time.time()
-        screen_writer.load_array(picture=state)
+        #print(state.astype(int))
+        screen_writer.load_array(picture=state.astype(int))
         screen_writer.write_data()
         #gol_obj.visualize_state(state=state, step=step, figure=f)
         gol_obj.calc_next_step()
