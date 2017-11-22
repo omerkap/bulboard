@@ -1,7 +1,11 @@
-import RPi.GPIO as GPIO
+try:
+    import RPi.GPIO as GPIO
+except ImportError as ex:
+    print ex
 from time import sleep
 import re
 import pprint
+
 
 class SRDriver(object):
 
@@ -11,7 +15,7 @@ class SRDriver(object):
     # If we soldered the board in such a way that the first wire is connected to
     # the 7th reg, use board_starting_reg = 6
     def __init__(self, board_num_of_regs, num_of_boards,
-                 clk_pin, store_pin, data_pin, index_map_file):
+                 clk_pin, store_pin, data_pin, index_map_file, is_simulated=False):
         self._index_map = self._read_csv(index_map_file)
         self._num_of_boards = num_of_boards
         self._board_num_of_regs = board_num_of_regs
@@ -20,18 +24,20 @@ class SRDriver(object):
         self.data_pin = data_pin
         self.num_of_lines = len(self._index_map)
         self.num_of_columns = len(self._index_map[0])
+        self.simulated = is_simulated
         self.data = [0] * (self._num_of_boards * self._board_num_of_regs)
         for i in range(0, len(self.data)):
             self.data[i] = 0
 
-        GPIO.setmode(GPIO.BOARD)
-        GPIO.setup(self.data_pin, GPIO.OUT)
-        GPIO.setup(self.store_pin, GPIO.OUT)
-        GPIO.setup(self.clk_pin, GPIO.OUT)
+        if is_simulated is False:
+            GPIO.setmode(GPIO.BOARD)
+            GPIO.setup(self.data_pin, GPIO.OUT)
+            GPIO.setup(self.store_pin, GPIO.OUT)
+            GPIO.setup(self.clk_pin, GPIO.OUT)
 
-        GPIO.output(self.data_pin, 0)
-        GPIO.output(self.store_pin, 0)
-        GPIO.output(self.clk_pin, 0)
+            GPIO.output(self.data_pin, 0)
+            GPIO.output(self.store_pin, 0)
+            GPIO.output(self.clk_pin, 0)
 
     def _read_csv(self,index_map_file):
         file = open(index_map_file)
@@ -57,22 +63,24 @@ class SRDriver(object):
         :param data:
         :return:
         """
-        GPIO.output(self.data_pin, data)
-        sleep(0.00005)
-        GPIO.output(self.clk_pin, 1)
-        sleep(0.00001)
-        GPIO.output(self.clk_pin, 0)
-        sleep(0.00001)
+        if self.simulated is False:
+            GPIO.output(self.data_pin, data)
+            sleep(0.00005)
+            GPIO.output(self.clk_pin, 1)
+            sleep(0.00001)
+            GPIO.output(self.clk_pin, 0)
+            sleep(0.00001)
 
     def load_output(self):
         """
         load shift register data into output latches
         :return:
         """
-        GPIO.output(self.store_pin, 1)
-        sleep(0.00001)
-        GPIO.output(self.store_pin, 0)
-        sleep(0.00001)
+        if self.simulated is False:
+            GPIO.output(self.store_pin, 1)
+            sleep(0.00001)
+            GPIO.output(self.store_pin, 0)
+            sleep(0.00001)
 
     def write_data(self):
         for d in self.data:
@@ -97,7 +105,6 @@ class SRDriver(object):
         
             self.load_output()
             sleep(2)
-            
 
     def test_blink(self):                
         pic = [self.num_of_columns * [0] for k in range(0, self.num_of_lines)]
@@ -113,9 +120,9 @@ class SRDriver(object):
         pic = []
         for i in range(self.num_of_lines):
             if i == line:
-               pic.append(self.num_of_columns * [1])
+                pic.append(self.num_of_columns * [1])
             else:
-               pic.append(self.num_of_columns * [0])
+                pic.append(self.num_of_columns * [0])
         return pic
 
     def light_column(self, c):
@@ -135,13 +142,14 @@ class SRDriver(object):
  
     def test_lines(self):
         for i in range(self.num_of_lines):
-           print 'line: {}'.format(i)
-           
-           pic = self.light_line(line=i)
-           pprint.pprint(pic)
-           self.load_array(pic)
-           self.write_data()
-           sleep(1) 
+            print 'line: {}'.format(i)
+
+            pic = self.light_line(line=i)
+            pprint.pprint(pic)
+            self.load_array(pic)
+            self.write_data()
+            sleep(1)
+
 
 if __name__ == '__main__':
     driver = SRDriver(board_num_of_regs=56,

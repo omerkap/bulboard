@@ -1,5 +1,4 @@
 import logging
-from logging.handlers import RotatingFileHandler
 from disk_sapce_file_handlers import DiskSpaceRotatingFileHandler
 import numpy as np
 from datetime import datetime
@@ -8,8 +7,8 @@ import time
 try:
     import matplotlib.pyplot as plt
     from matplotlib import animation
-except Exception:
-    pass
+except ImportError as ex:
+    print ex
 import sys
 sys.path.append(r'../')
 from SR_Board.sr_driver import SRDriver
@@ -25,7 +24,7 @@ class GameOfLife(object):
         self._step = 0
 
     def reset_initial_pattern(self, initial_pattern):
-        self._logger.warning('reseting initial pattern, new size: {}'.format(initial_pattern.shape))
+        self._logger.warning('resetting initial pattern, new size: {}'.format(initial_pattern.shape))
         self._state = initial_pattern
         self._size = self._state.shape
         self._step = 0
@@ -143,7 +142,10 @@ class GameOfLife(object):
 def init_logging(level):
     root_logger = logging.getLogger()
     root_logger.setLevel(level=level)
-
+    try:
+        os.mkdir('logs')
+    except Exception:
+        pass
     file_name = os.path.join('logs', 'GameOfLife_{}'.format(datetime.now().strftime('%d_%m_%y__%H_%M_%S')))
     #file_handler = RotatingFileHandler(filename=file_name, maxBytes=10e6, backupCount=5)
     file_handler = DiskSpaceRotatingFileHandler(folder_max_size=10E6, filename=file_name, maxBytes=1E6, backupCount=10000)
@@ -158,7 +160,7 @@ def init_logging(level):
 
 
 if __name__ == '__main__':
-    init_logging(logging.DEBUG)
+    init_logging(logging.INFO)
     l = logging.getLogger()
     p = np.zeros((17, 11))
 
@@ -186,22 +188,22 @@ if __name__ == '__main__':
                              clk_pin=11,
                              store_pin=12,
                              data_pin=13,
-                             index_map_file=os.path.join('..', 'SR_Board', 'index_map.csv'))
+                             index_map_file=os.path.join('..', 'SR_Board', 'index_map.csv'),
+                             is_simulated=True)
 
-    #plt.ion()
-    #f = plt.figure()
+    plt.ion()
+    f = plt.figure()
 
     for i in range(200):
         state = gol_obj.state
         step = gol_obj.step
         l.info('step: {}'.format(step))
         t0 = time.time()
-        #print(state.astype(int))
         screen_writer.load_array(picture=state.astype(int))
         screen_writer.write_data()
-        #gol_obj.visualize_state(state=state, step=step, figure=f)
+        gol_obj.visualize_state(state=state, step=step, figure=f)
         gol_obj.calc_next_step()
-        time.sleep(0.5)
+        time.sleep(0.1)
 
 
 
