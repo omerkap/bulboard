@@ -4,6 +4,8 @@ import numpy as np
 from datetime import datetime
 import os
 import time
+from abstract_screen_usage import AbstractScreenUsage
+
 try:
     import matplotlib.pyplot as plt
     from matplotlib import animation
@@ -14,7 +16,7 @@ sys.path.append(r'../')
 from SR_Board.sr_driver import SRDriver
 
 
-class GameOfLife(object):
+class GameOfLife(AbstractScreenUsage):
     def __init__(self, initial_pattern):
         self._logger = logging.getLogger(self.__class__.__name__)
         self._logger.info('initialized Game Of Life')
@@ -29,7 +31,7 @@ class GameOfLife(object):
         self._size = self._state.shape
         self._step = 0
 
-    def calc_next_step(self):
+    def get_next_step(self):
         """
         Advance the state 1 step
         :return:
@@ -47,6 +49,7 @@ class GameOfLife(object):
         self._step += 1
         t1 = time.time()
         self._logger.debug('step calculation time: {}'.format(t1 - t0))
+        return self._state
 
     def _calculate_one_cell(self, index, bloated):
         """

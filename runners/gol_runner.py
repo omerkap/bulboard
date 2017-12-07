@@ -1,9 +1,9 @@
 from datetime import datetime
-from disk_sapce_file_handlers import DiskSpaceRotatingFileHandler
+from screen_usages.disk_sapce_file_handlers import DiskSpaceRotatingFileHandler
 import logging
 import os
 import time
-from gol_calculator import GameOfLife
+from screen_usages.gol_calculator import GameOfLife
 import numpy as np
 
 try:
@@ -68,8 +68,7 @@ class GameOfLifeRunner(object):
             state = gol_obj.state
             step = gol_obj.step
             logger.info('step: {}'.format(step))
-            screen_writer.load_array(picture=state.astype(int))
-            screen_writer.write_data()
+            screen_writer.draw(pic=state.astype(int))
             gol_obj.visualize_state(state=state, step=step, figure=f)
             gol_obj.calc_next_step()
             time.sleep(0.1)

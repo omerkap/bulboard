@@ -87,6 +87,10 @@ class SRDriver(object):
             self.shift_data(data=d)
         self.load_output()
 
+    def draw(self, pic):
+        self.load_array(picture=pic)
+        self.write_data()
+
     def test_board(self):
         for i in range(0, self.num_of_lines):
             for j in range(0, self.num_of_columns):
