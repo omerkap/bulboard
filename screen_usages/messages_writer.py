@@ -1,3 +1,4 @@
+# -*- coding: utf8 -*-
 from __future__ import print_function
 import logging
 from disk_sapce_file_handlers import DiskSpaceRotatingFileHandler
@@ -44,8 +45,12 @@ class MessagesWriter(object):
         text_matrix = self._str_to_pixels(string=text)
         if text_matrix.shape[0] < self._screen_size[0]:
             self._logger.debug('text is shorter than screen, padding towards downside')
-            padding_matrix = np.zeros([self._screen_size[0]-text_matrix.shape[0], text_matrix.shape[1]])
-            text_matrix = np.concatenate([text_matrix, padding_matrix], 0)
+            a, b = divmod(self._screen_size[0] - text_matrix.shape[0], 2)
+            top_size = self._screen_size[0] - text_matrix.shape[0] - a
+            bottom_size = a
+            top_padding_matrix = np.zeros([top_size, text_matrix.shape[1]])
+            bottom_padding_matrix = np.zeros([bottom_size, text_matrix.shape[1]])
+            text_matrix = np.concatenate([top_padding_matrix, text_matrix, bottom_padding_matrix], 0)
 
         # add to text matrix an 'empty' matrix with the screen size, so when we move the text we start from clean screen
         self._text_matrix = np.concatenate([np.zeros(self._screen_size, dtype=int), text_matrix], 1)
@@ -54,28 +59,43 @@ class MessagesWriter(object):
         return self._text_matrix.shape[1]
 
     def get_next_frame(self):
-        if self._scrolling_step + self._screen_size[1] <= self._text_matrix.shape[1]:
-            result = self._text_matrix[:, self._scrolling_step: self._scrolling_step + self._screen_size[1]]
-        else:
-            result = np.concatenate([
-                self._text_matrix[:, self._scrolling_step: self._text_matrix.shape[1]],
-                self._text_matrix[:, 0: self._screen_size[1] - (self._text_matrix.shape[1] - self._scrolling_step)]
-            ], 1)
+        if not self._rtl:
+            if self._scrolling_step + self._screen_size[1] <= self._text_matrix.shape[1]:
+                result = self._text_matrix[:, self._scrolling_step: self._scrolling_step + self._screen_size[1]]
+            else:
+                result = np.concatenate([
+                    self._text_matrix[:, self._scrolling_step: self._text_matrix.shape[1]],
+                    self._text_matrix[:, 0: self._screen_size[1] - (self._text_matrix.shape[1] - self._scrolling_step)]
+                ], 1)
 
-        if self._scrolling_step < self._text_matrix.shape[1]:
-            self._scrolling_step += 1
+            if self._scrolling_step < self._text_matrix.shape[1]:
+                    self._scrolling_step += 1
+            else:
+                self._scrolling_step = 0
+
         else:
-            self._scrolling_step = 0
+            if self._scrolling_step - self._screen_size[1] >= 0:
+                result = self._text_matrix[:, self._scrolling_step - self._screen_size[1]: self._scrolling_step]
+            else:
+                result = np.concatenate([
+                    self._text_matrix[:, self._text_matrix.shape[1] - (self._screen_size[1] - self._scrolling_step): self._text_matrix.shape[1]],
+                    self._text_matrix[:, 0: self._scrolling_step]
+                ], 1)
+
+            if self._scrolling_step == 0:
+                    self._scrolling_step = self._text_matrix.shape[1]
+            else:
+                self._scrolling_step -= 1
 
         return result
 
     def _str_to_pixels(self, string):
-        self._logger.info('converting {} to array'.format(string))
+        #self._logger.info('converting {} to array'.format(string))
         string_array = np.zeros((self._font_size, 1), dtype=int)  # 0 column
         for c in string:
             arr = self._char_to_pixels(c)
             string_array = np.concatenate([string_array, arr], 1)
-        return string_array
+        return self._trim(string_array)
 
     def _char_to_pixels(self, char):
         """
@@ -88,6 +108,26 @@ class MessagesWriter(object):
         arr = np.asarray(image)
         arr = np.where(arr, 0, 1)  # replace 1's and 0's
         return np.concatenate([np.zeros([self._font_size - arr.shape[0], arr.shape[1]], dtype=int), arr], 0)
+
+    @staticmethod
+    def _trim(matrix):
+        i = j = 0
+        for i in range(matrix.shape[0]):
+            if np.sum(matrix[i:i+1, :], 1) > 0:
+                break
+
+        for j in range(matrix.shape[0], 0, -1):
+            if np.sum(matrix[j:j+1, :], 1) > 0:
+                break
+
+        return matrix[i:j+1, :]
+
+    @staticmethod
+    def mirror_string(string):
+        s = ''
+        for i in range(len(string) - 1, -1, -1):
+            s = s + string[i]
+        return s
 
 
 def init_logging(level):
@@ -112,10 +152,11 @@ def init_logging(level):
 if __name__ == '__main__':
     init_logging(level=logging.DEBUG)
     #font_path = r'/home/netanel/PycharmProjects/bulboard/screen_usages/fonts/arcade/ARCADE.TTF'
-    font_path = r'/usr/share/fonts/truetype/freefont/FreeSans.ttf'
-    #font_path = r'/usr/share/fonts/truetype/freefont/FreeSerif.ttf'
+    #font_path = r'/usr/share/fonts/truetype/freefont/FreeSans.ttf'
+    font_path = r'C:\Windows\Fonts\Arial.ttf'
+
     mw = MessagesWriter(font_path, 17, (17, 11))
-    steps = mw.load_text('Devora')
+    steps = mw.load_text(mw.mirror_string(u'חנוכה שמח'), True)
 
     plt.ion()
     f = plt.figure()
