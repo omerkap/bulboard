@@ -2,15 +2,14 @@
 from __future__ import print_function
 import logging
 from disk_sapce_file_handlers import DiskSpaceRotatingFileHandler
-import numpy as np
 from datetime import datetime
 import os
 import time
-import string
 from PIL import Image
 from PIL import ImageFont
 from PIL import ImageDraw
 import numpy as np
+from abstract_screen_usage import AbstractScreenUsage
 try:
     import matplotlib.pyplot as plt
     from matplotlib import animation
@@ -18,10 +17,9 @@ except ImportError as ex:
     print(ex)
 import sys
 sys.path.append(r'../')
-from SR_Board.sr_driver import SRDriver
 
 
-class MessagesWriter(object):
+class MessagesWriter(AbstractScreenUsage):
     def __init__(self, font_path, font_size, screen_size=(17, 11)):
         self._logger = logging.getLogger(self.__class__.__name__)
         self._logger.info('initializing {}'.format(self.__class__.__name__))
@@ -36,11 +34,23 @@ class MessagesWriter(object):
         self._logger.info('finished initializing MessagesWriter')
 
     def set_font(self, font_path, font_size):
+        """
+        Set the current used font of MessagesWriter
+        :param font_path: path to used font
+        :param font_size: size
+        :return:
+        """
         self._logger.info('setting new font, {}'.format(font_path))
         self._font = ImageFont.truetype(font_path, font_size)
         self._font_size = font_size
 
     def load_text(self, text, rtl=False):
+        """
+        Set the current shown text of MessagesWriter
+        :param text: the text string
+        :param rtl: should the text be interpreted as RTL (scroll the other direction)
+        :return: the length of the full text matrix
+        """
         self._rtl = rtl
         text_matrix = self._str_to_pixels(string=text)
         if text_matrix.shape[0] < self._screen_size[0]:
@@ -58,7 +68,11 @@ class MessagesWriter(object):
         self._logger.debug('text size: {}'.format(self._text_matrix.shape))
         return self._text_matrix.shape[1]
 
-    def get_next_frame(self):
+    def get_next_step(self):
+        """
+        Roll the text in one pixel to the wanted direction (RTL: right, LTR: left) and return the next viewable matrix
+        :return:
+        """
         if not self._rtl:
             if self._scrolling_step + self._screen_size[1] <= self._text_matrix.shape[1]:
                 result = self._text_matrix[:, self._scrolling_step: self._scrolling_step + self._screen_size[1]]
@@ -124,6 +138,11 @@ class MessagesWriter(object):
 
     @staticmethod
     def mirror_string(string):
+        """
+        Mirror string, can be used for mirroring Hebrew text
+        :param string:
+        :return:
+        """
         s = ''
         for i in range(len(string) - 1, -1, -1):
             s = s + string[i]
@@ -152,21 +171,21 @@ def init_logging(level):
 if __name__ == '__main__':
     init_logging(level=logging.DEBUG)
     #font_path = r'/home/netanel/PycharmProjects/bulboard/screen_usages/fonts/arcade/ARCADE.TTF'
-    #font_path = r'/usr/share/fonts/truetype/freefont/FreeSans.ttf'
-    font_path = r'C:\Windows\Fonts\Arial.ttf'
+    font_path = r'/usr/share/fonts/truetype/freefont/FreeSans.ttf'
+    #font_path = r'C:\Windows\Fonts\Arial.ttf'
 
     mw = MessagesWriter(font_path, 17, (17, 11))
-    steps = mw.load_text(mw.mirror_string(u'חנוכה שמח'), True)
+    steps = mw.load_text(mw.mirror_string(u'חג שמח!'), True)
 
     plt.ion()
     f = plt.figure()
     #plt.show()
     for k in range(2 * steps):
-        a = mw.get_next_frame()
+        a = mw.get_next_step()
         f.clf()
         plt.imshow(a, cmap='hot')
         f.canvas.draw()
-        time.sleep(0.05)
+        time.sleep(0.01)
 
 #    plt.show()
 

@@ -70,5 +70,11 @@ class GameOfLifeRunner(object):
             logger.info('step: {}'.format(step))
             screen_writer.draw(pic=state.astype(int))
             gol_obj.visualize_state(state=state, step=step, figure=f)
-            gol_obj.calc_next_step()
+            gol_obj.get_next_step()
             time.sleep(0.1)
+
+
+if __name__ == '__main__':
+    initial_beacon = GameOfLife.get_demo_glider()
+    gol_runner = GameOfLifeRunner(initial_beacon, 100)
+    gol_runner.start()
