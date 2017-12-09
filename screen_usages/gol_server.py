@@ -1,6 +1,6 @@
 from flask import Flask
-import gol_calculator
-from gol_runner import GameOfLifeRunner
+
+from runners.gol_runner import GameOfLifeRunner
 
 app = Flask(__name__)
 
