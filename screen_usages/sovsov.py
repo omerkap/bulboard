@@ -1,7 +1,10 @@
 import numpy as np
 import math
 from abstract_screen_usage import AbstractScreenUsage
-import matplotlib.pyplot as plt
+try:
+    import matplotlib.pyplot as plt
+except ImportError as ex:
+    print ex
 
 
 class Sovsov(AbstractScreenUsage):

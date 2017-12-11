@@ -1,8 +1,13 @@
+import sys
+sys.path.append(r'../')
 from SR_Board.sr_driver import SRDriver
 from screen_usages.sovsov import Sovsov
 from time import sleep
 import os
-import matplotlib.pyplot as plt
+try:
+    import matplotlib.pyplot as plt
+except ImportError as ex:
+    print ex
 
 
 class HanukkahRunner(object):

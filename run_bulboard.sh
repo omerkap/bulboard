@@ -1,4 +1,4 @@
 #!/bin/bash
 
-cd /home/pi/bulboard/SR_Board
-python sr_driver.py
+cd /home/pi/bulboard/runners
+python static_sov_n_txt_runner.py

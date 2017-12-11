@@ -1,4 +1,6 @@
 # -*- coding: utf8 -*-
+import sys
+sys.path.append(r'../')
 from SR_Board.sr_driver import SRDriver
 from screen_usages.sovsov import Sovsov
 import time
@@ -6,7 +8,10 @@ import os
 import numpy as np
 
 from screen_usages.messages_writer import MessagesWriter
-import matplotlib.pyplot as plt
+try:
+    import matplotlib.pyplot as plt
+except ImportError as ex:
+    print ex
 
 
 class StaticSovNTextRunner(object):
@@ -67,8 +72,8 @@ class StaticSovNTextRunner(object):
         self.mw.load_text(self.mw.mirror_string(u'חנוכה שמח!'), True)
 
     def start(self):
-        plt.ion()
-        f = plt.figure()
+        #plt.ion()
+        #f = plt.figure()
         counter = 0
         while (True):
             if (counter >= 28):
@@ -92,6 +97,7 @@ class StaticSovNTextRunner(object):
 if __name__ == '__main__':
     #font_path = r'/home/netanel/PycharmProjects/bulboard/screen_usages/fonts/arcade/ARCADE.TTF'
     #font_path = r'/usr/share/fonts/truetype/freefont/FreeSans.ttf'
-    font_path = r'C:\Windows\Fonts\Arial.ttf'
+    font_path = r'/usr/share/fonts/truetype/msttcorefonts/Arial.ttf'
+    #font_path = r'C:\Windows\Fonts\Arial.ttf'
     runner = StaticSovNTextRunner()
     runner.start()
