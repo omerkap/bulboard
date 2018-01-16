@@ -116,12 +116,16 @@ class MessagesWriter(AbstractScreenUsage):
         Based on https://stackoverflow.com/a/27753869/190597 (jsheperd)
         """
         w, h = self._font.getsize(char)
+        self._logger.debug('char: {}, w: {}, h: {}'.format(char, w, h))
         image = Image.new('L', (w, h), 1)
         draw = ImageDraw.Draw(image)
         draw.text((0, 0), char, font=self._font)
         arr = np.asarray(image)
         arr = np.where(arr, 0, 1)  # replace 1's and 0's
-        return np.concatenate([np.zeros([self._font_size - arr.shape[0], arr.shape[1]], dtype=int), arr], 0)
+        if arr.shape[0] < self._font_size:
+            return np.concatenate([np.zeros([self._font_size - arr.shape[0], arr.shape[1]], dtype=int), arr], 0)
+        else:
+            return arr
 
     @staticmethod
     def _trim(matrix):
