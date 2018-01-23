@@ -5,6 +5,7 @@ from disk_sapce_file_handlers import DiskSpaceRotatingFileHandler
 from datetime import datetime
 import os
 import time
+from bdf_font import BdfFont
 from PIL import Image
 from PIL import ImageFont
 from PIL import ImageDraw
@@ -20,20 +21,21 @@ sys.path.append(r'../')
 
 
 class MessagesWriter(AbstractScreenUsage):
-    def __init__(self, font_path, font_size, screen_size=(17, 11)):
+    def __init__(self, font_path, font_size, screen_size=(17, 11), bdf=False):
         self._logger = logging.getLogger(self.__class__.__name__)
         self._logger.info('initializing {}'.format(self.__class__.__name__))
         self._logger.info('screen size: {}'.format(screen_size))
         self._screen_size = screen_size
         self._font = None
+        self._is_bdf = False
         self._font_size = None
         self._rtl = None
         self._text_matrix = None
         self._scrolling_step = 0
-        self.set_font(font_path=font_path, font_size=font_size)
+        self.set_font(font_path=font_path, font_size=font_size, bdf=bdf)
         self._logger.info('finished initializing MessagesWriter')
 
-    def set_font(self, font_path, font_size):
+    def set_font(self, font_path, font_size, bdf=False):
         """
         Set the current used font of MessagesWriter
         :param font_path: path to used font
@@ -41,8 +43,14 @@ class MessagesWriter(AbstractScreenUsage):
         :return:
         """
         self._logger.info('setting new font, {}'.format(font_path))
-        self._font = ImageFont.truetype(font_path, font_size)
-        self._font_size = font_size
+        if bdf is False:
+            self._font = ImageFont.truetype(font_path, font_size)
+            self._font_size = font_size
+        else:
+            self._logger.info('bdf font is used, size is taken from Font parameters')
+            self._font = BdfFont(font_file=font_path)
+            self._font_size = self._font.get_font_size()[1]
+            self._is_bdf = True
 
     def load_text(self, text, rtl=False):
         """
@@ -115,6 +123,8 @@ class MessagesWriter(AbstractScreenUsage):
         """
         Based on https://stackoverflow.com/a/27753869/190597 (jsheperd)
         """
+        if self._is_bdf:
+            return self._font.char_to_matrix(char)
         w, h = self._font.getsize(char)
         self._logger.debug('char: {}, w: {}, h: {}'.format(char, w, h))
         image = Image.new('L', (w, h), 1)
@@ -177,9 +187,13 @@ if __name__ == '__main__':
     #font_path = r'/home/netanel/PycharmProjects/bulboard/screen_usages/fonts/arcade/ARCADE.TTF'
     font_path = r'/usr/share/fonts/truetype/freefont/FreeSans.ttf'
     #font_path = r'C:\Windows\Fonts\Arial.ttf'
+    font_path = r'fonts/bdf/5x8.bdf'
+    font_path = r'fonts/bdf/7x14B.bdf'
+    font_path = r'fonts/bdf/helvR12.bdf'
 
-    mw = MessagesWriter(font_path, 17, (17, 11))
-    steps = mw.load_text(mw.mirror_string(u'חג שמח!'), True)
+    mw = MessagesWriter(font_path, 17, (17, 11), True)
+    #steps = mw.load_text(mw.mirror_string(u'חג שמח!'), True)
+    steps = mw.load_text(u'חג שמח!')
 
     plt.ion()
     f = plt.figure()

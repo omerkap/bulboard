@@ -8,7 +8,7 @@ except ImportError as ex:
 
 
 class Sovsov(AbstractScreenUsage):
-    SCALE = 10
+    SCALE = 100
     BOARD_SIZE = [17,11]
     DRAW_ORIGIN = [8, 5]
 
@@ -67,8 +67,8 @@ class Sovsov(AbstractScreenUsage):
         drawable = np.zeros((self.BOARD_SIZE[0]*self.SCALE,self.BOARD_SIZE[1]*self.SCALE))
         if (render_lines == 0):
             for point in projected_a:
-                drawable[round(point[0] + self.DRAW_ORIGIN[0]*self.SCALE),
-                         round(point[1] + self.DRAW_ORIGIN[1]*self.SCALE)] = 1
+                drawable[int(round(point[0] + self.DRAW_ORIGIN[0]*self.SCALE)),
+                         int(round(point[1] + self.DRAW_ORIGIN[1]*self.SCALE))] = 1
         else:
             res_enhance = 2
             for line in self.lines:
@@ -79,7 +79,7 @@ class Sovsov(AbstractScreenUsage):
                 vector /= vector_length #normalized
                 for step in range(0,int(math.floor(vector_length*res_enhance))):
                     next_p = p0 + vector/res_enhance*step
-                    drawable[self.DRAW_ORIGIN[0] * self.SCALE + next_p[0],
-                             self.DRAW_ORIGIN[1] * self.SCALE + next_p[1]] = 1
+                    drawable[int(self.DRAW_ORIGIN[0] * self.SCALE + next_p[0]),
+                             int(self.DRAW_ORIGIN[1] * self.SCALE + next_p[1])] = 1
         return drawable
 

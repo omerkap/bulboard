@@ -9,11 +9,11 @@
 
     <form action="/set_text">
     First line:
-        <input type="text" name="FirstLine" value="line1"> RTL:
-        <input type="checkbox" name="FirstLineRtl" value="False"><br>
+        <input type="text" name="FirstLine" value={% if first_line_text %} {{first_line_text}} {% endif %}> RTL:
+        <input type="checkbox" name="FirstLineRtl" value="True" {% if first_line_rtl %} {{first_line_rtl}} {% endif %}><br>
     Second line:
-        <input type="text" name="SecondLine" value="line2"> RTL:
-        <input type="checkbox" name="SecondLineRtl" value="False"><br>
+        <input type="text" name="SecondLine" value={% if second_line_text %} {{second_line_text}} {% endif %}> RTL:
+        <input type="checkbox" name="SecondLineRtl" value="True" {% if first_line_rtl %} {{first_line_rtl}} {% endif %}><br>
     <input type="submit" value="Submit">
     </form>
 
@@ -41,7 +41,7 @@
         }
 
         getCurrentImage();
-        setInterval(getCurrentImage, 1000);
+        setInterval(getCurrentImage, 200);
     </script>
 </body>
 </html>

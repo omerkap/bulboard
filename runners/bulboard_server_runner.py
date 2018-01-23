@@ -21,33 +21,51 @@ app = Flask(__name__)
 
 # TODO: move to config file sometime
 FONT_PATH = r'/usr/share/fonts/truetype/msttcorefonts/Arial.ttf'
+FONT_PATH = r'../screen_usages/fonts/arcade/ARCADE.TTF' #['..', 'screen_usages', 'fonts', 'arcade', 'ARCADE.TTF'])
+FONT_PATH = r'../screen_usages/fonts/Ozone.ttf'
+FONT_PATH = r'../screen_usages/fonts/bdf/5x7.bdf'
+FONT_PATH = r'../screen_usages/fonts/bdf/6x10.bdf'
+
 DELAY_BETWEEN_PIXEL_SCROLL = 0.2  #[S]
-LOG_LEVEL = logging.DEBUG
+LOG_LEVEL = logging.INFO
 
 
 @app.route("/")
-def hello():
-    return render_template('index.html')
+def hello(first_line_text='line1', first_line_rtl='', second_line_text='line2', second_line_rtl=False):
+
+    return render_template('index.html',
+                           first_line_text=first_line_text,
+                           first_line_rtl=first_line_rtl,
+                           second_line_text=second_line_text,
+                           second_line_rtl=second_line_rtl)
 
 
 @app.route("/set_text")
 def set_text():
     first_line_text = request.values['FirstLine']
     try:
-        first_line_rtl = request.values['FirstLineRtl']
+        first_line_rtl = bool(request.values['FirstLineRtl'])
     except Exception:
         first_line_rtl = False
     second_line_text = request.values['SecondLine']
     try:
-        second_line_rtl = request.values['SecondLineRtl']
+        second_line_rtl = bool(request.values['SecondLineRtl'])
     except Exception:
         second_line_rtl = False
 
     try:
         runner.set_text(first_line=first_line_text, second_line=second_line_text,
                         first_line_rtl=first_line_rtl, second_line_rtl=second_line_rtl)
+        first_checked = 'checked' if first_line_rtl is True else ''
+        second_checked = 'checked' if second_line_rtl is True else ''
+        return hello(first_line_text=first_line_text,
+                     first_line_rtl=first_checked,
+                     second_line_text=second_line_text,
+                     second_line_rtl=second_checked)
+
     except Exception as ex:
         logging.exception(ex)
+
     return hello()
 
 
@@ -69,8 +87,8 @@ class DualMessageRunner(threading.Thread):
     def __init__(self):
         self._logger = logging.getLogger(self.__class__.__name__)
         super(DualMessageRunner,  self).__init__()
-        self._line_1_mw = MessagesWriter(font_path=FONT_PATH, font_size=10, screen_size=(8, 11))
-        self._line_2_mw = MessagesWriter(font_path=FONT_PATH, font_size=10, screen_size=(8, 11))
+        self._line_1_mw = MessagesWriter(font_path=FONT_PATH, font_size=8, screen_size=(9, 11), bdf=True)
+        self._line_2_mw = MessagesWriter(font_path=FONT_PATH, font_size=8, screen_size=(9, 11), bdf=True)
         self._sr_driver = SRDriver(board_num_of_regs=56,
                                    num_of_boards=4,
                                    clk_pin=11,
@@ -84,8 +102,14 @@ class DualMessageRunner(threading.Thread):
         self._logger.info('initialized {}'.format(self.__class__.__name__))
 
     def set_text(self, first_line=' ', second_line=' ', first_line_rtl=False, second_line_rtl=False):
+
         self._logger.info('in set_text, first_line: {}, second_line: {}, first_line_rtl: {}, second_line_rtl: {}'
                            .format(first_line, second_line, first_line_rtl, second_line_rtl))
+        if first_line_rtl is True:
+            first_line = MessagesWriter.mirror_string(first_line)
+        if second_line_rtl is True:
+            second_line = MessagesWriter.mirror_string(second_line)
+
         self._line_1_mw.load_text(text=first_line, rtl=first_line_rtl)
         self._line_2_mw.load_text(text=second_line, rtl=second_line_rtl)
 
