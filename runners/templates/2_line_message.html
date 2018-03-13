@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block title %}{{'2 line message'}}{% endblock %}
+
+{% block two_line_active_class %} active {% endblock %}
+
+{% block body_block %}
+
+    <form action="/set_text">
+    First line:
+        <input type="text" name="FirstLine" value={% if first_line_text %} {{first_line_text}} {% endif %}> RTL:
+        <input type="checkbox" name="FirstLineRtl" value="True" {% if first_line_rtl %} {{first_line_rtl}} {% endif %}><br>
+    Second line:
+        <input type="text" name="SecondLine" value={% if second_line_text %} {{second_line_text}} {% endif %}> RTL:
+        <input type="checkbox" name="SecondLineRtl" value="True" {% if first_line_rtl %} {{first_line_rtl}} {% endif %}><br>
+    <input type="submit" value="Submit">
+    </form>
+
+    <p>Click the "Submit" button and the text will be sent to the bulboard</p>
+
+
+{% endblock %}
+
+
+
+

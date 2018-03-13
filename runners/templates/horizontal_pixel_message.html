@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+
+{% block title %}{{'horizontal pixel message'}}{% endblock %}
+
+{% block horizontal_pixel_active_class %} active {% endblock %}
+
+{% block body_block %}
+
+    <h1>under development</h1>
+    <div id="pixel-message">
+        <div class="pixel-row">
+            <div class="pixel" onclick="setPixelColor(this)"></div>
+            <div class="pixel" onclick="setPixelColor(this)"></div>
+            <div class="pixel" onclick="setPixelColor(this)"></div>
+        </div>
+    </div>
+
+
+    <button type="button" onclick="sendPixelsStateToServer()">Submit</button>
+
+
+{% endblock %}
+
+{% block script_block %}
+
+    function setPixelColor(pixel)
+    {
+        if(pixel.style.backgroundColor == 'black'){
+            pixel.style.backgroundColor = 'white';
+        }
+        else{
+            pixel.style.backgroundColor = 'black';
+        }
+
+    }
+
+    function sendPixelsStateToServer(){
+        console.log("in sendPixelsStateToServer");
+
+        var pixelsDiv = document.getElementById("pixel-message");
+        var numOfRows = pixelsDiv.children.length;
+        var outputArray = new Array(numOfRows);
+
+        for (var i=0; i < numOfRows; i++){
+            var rowDiv = pixelsDiv.children[i];
+            var numOfPixelsInRow = rowDiv.children.length;
+            outputArray[i] = new Array(numOfPixelsInRow);
+
+            for (var j=0; j < numOfPixelsInRow; j++){
+                var pixel = rowDiv.children[j];
+                var pixelColor = pixel.style.backgroundColor;
+                if (pixelColor == "black"){
+                    outputArray[i][j] = 1;
+                }
+                else{
+                    outputArray[i][j] = 0;
+                }
+            }
+
+        }
+
+        console.log(outputArray)
+        $.ajax({
+                url: 'set_horizontal_pixel_message',
+                type: 'POST',
+                data: JSON.stringify(outputArray),
+                contentType: 'application/json; charset=utf-8',
+                dataType: 'json',
+                async: true,
+                success: function(msg){}
+        });
+
+    }
+
+{% endblock %}
+
+
+
+

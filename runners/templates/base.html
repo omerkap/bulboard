@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Bootstrap -->
+    <link href="{{ url_for('static', filename='css/bootstrap.css') }}" rel="stylesheet" media="screen">
+    <link href="{{ url_for('static', filename='css/bootstrap-toggle.css') }}" rel="stylesheet" media="screen">
+
+    <title>{% block title%} Bulbboard Controller App{% endblock%}</title>
+</head>
+<body>
+    <!-- Side Bar -->
+    <div class="sidebar">
+        <img id="cur_img" src="" />
+    </div>
+
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="{{url_for('index')}}">Bulboard Controller</a>
+            </div>
+        <div id="navbar" class="collapse navbar-collapse">
+            <ul class="nav navbar-nav">
+            <li class="{% block one_line_active_class %}{% endblock %}"><a href="{{url_for('one_line_message')}}">One Line Message</a></li>
+            <li class="{% block two_line_active_class %}{% endblock %}"><a href="{{url_for('two_line_message')}}">2 Lines Message</a></li>
+            <li class="{% block horizontal_pixel_active_class %}{% endblock %}"><a href="{{url_for('horizontal_pixel_message')}}">Horizontal Pixel Message</a></li>
+            </ul>
+        </div><!--/.nav-collapse -->
+        </div>
+    </nav>
+
+
+
+    <div class="container">
+        <div class="starter-template">
+            {% block body_block %}{% endblock %}
+        </div>
+    </div><!-- /.container -->
+
+    <script src="{{ url_for('static', filename='js/jquery-2.1.4.js')}}"></script>
+    <script src="{{ url_for('static', filename='js/bootstrap-toggle.js')}}"></script>
+    <script src="{{ url_for('static', filename='js/bootstrap.js')}}"></script>
+
+    {% block footer_block %}{% endblock %}
+    <script>
+        window.URL = window.URL || window.webkitURL
+        function onCurrentImageload(e) {
+            //console.log(e.target.response);
+            //var data = JSON.parse(e.target.response);
+            var image = document.getElementById("cur_img");
+            //image.src = url.createObjectURL(e.response);
+            image.src = window.URL.createObjectURL(e.target.response);
+            //e.src = "data:image/png;base64," + e.target.response
+        }
+
+        function getCurrentImage(){
+            var xhr=new XMLHttpRequest();
+            xhr.addEventListener('load', onCurrentImageload);
+            xhr.open('GET', "/cur_img", true);
+            xhr.responseType = 'blob';
+            xhr.send(null);
+        }
+
+        getCurrentImage();
+        setInterval(getCurrentImage, 200);
+
+        {% block script_block %}{% endblock %}
+    </script>
+</body>
+</html>

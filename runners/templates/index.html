@@ -1,50 +1,18 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Bulboard Manager</title>
-</head>
-<body>
+{% extends 'base.html' %}
+
+{% block title %}{{'horizontal pixel message'}}{% endblock %}
+
+{% block body_block %}
     <h1>Welcome to bulboard manager.</h1>
 
-    <form action="/set_text">
-    First line:
-        <input type="text" name="FirstLine" value={% if first_line_text %} {{first_line_text}} {% endif %}> RTL:
-        <input type="checkbox" name="FirstLineRtl" value="True" {% if first_line_rtl %} {{first_line_rtl}} {% endif %}><br>
-    Second line:
-        <input type="text" name="SecondLine" value={% if second_line_text %} {{second_line_text}} {% endif %}> RTL:
-        <input type="checkbox" name="SecondLineRtl" value="True" {% if first_line_rtl %} {{first_line_rtl}} {% endif %}><br>
-    <input type="submit" value="Submit">
-    </form>
+    <p>
+        Every tab has a different way to input data to the bulboard
+       <br>
+        Have a try.
+    </p>
+    <p>The Glass Breakers.</p>
 
-    <p>Click the "Submit" button and the text will be sent to the bulboard</p>
-    <!-- <img id="cur_img" src="data:image/png;base64,{}" /> -->
-    <img id="cur_img" src="" />
+{% endblock %}
 
-    <script>
-        window.URL = window.URL || window.webkitURL
-        function onCurrentImageload(e) {
-            //console.log(e.target.response);
-            //var data = JSON.parse(e.target.response);
-            var image = document.getElementById("cur_img");
-            //image.src = url.createObjectURL(e.response);
-            image.src = window.URL.createObjectURL(e.target.response);
-            //e.src = "data:image/png;base64," + e.target.response
-        }
 
-        function getCurrentImage(){
-            var xhr=new XMLHttpRequest();
-            xhr.addEventListener('load', onCurrentImageload);
-            xhr.open('GET', "/cur_img", true);
-            xhr.responseType = 'blob';
-            xhr.send(null);
-        }
 
-        getCurrentImage();
-        setInterval(getCurrentImage, 200);
-    </script>
-</body>
-</html>
-
-</body>
-</html>

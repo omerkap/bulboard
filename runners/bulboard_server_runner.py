@@ -5,6 +5,7 @@ import StringIO
 from datetime import datetime
 import numpy as np
 import logging
+import json
 from flask import Flask, url_for, render_template, request, make_response
 from screen_usages.messages_writer import MessagesWriter
 from screen_usages.disk_sapce_file_handlers import DiskSpaceRotatingFileHandler
@@ -31,13 +32,28 @@ LOG_LEVEL = logging.INFO
 
 
 @app.route("/")
-def hello(first_line_text='line1', first_line_rtl='', second_line_text='line2', second_line_rtl=False):
+def index():
+    return render_template('index.html')
 
-    return render_template('index.html',
+
+@app.route("/two_line_message")
+def two_line_message(first_line_text='line1', first_line_rtl='', second_line_text='line2', second_line_rtl=False):
+
+    return render_template('2_line_message.html',
                            first_line_text=first_line_text,
                            first_line_rtl=first_line_rtl,
                            second_line_text=second_line_text,
                            second_line_rtl=second_line_rtl)
+
+
+@app.route("/horizontal_pixel_message")
+def horizontal_pixel_message():
+    return render_template('horizontal_pixel_message.html')
+
+
+@app.route("/one_line_message")
+def one_line_message():
+    return render_template('one_line_message.html')
 
 
 @app.route("/set_text")
@@ -58,15 +74,24 @@ def set_text():
                         first_line_rtl=first_line_rtl, second_line_rtl=second_line_rtl)
         first_checked = 'checked' if first_line_rtl is True else ''
         second_checked = 'checked' if second_line_rtl is True else ''
-        return hello(first_line_text=first_line_text,
-                     first_line_rtl=first_checked,
-                     second_line_text=second_line_text,
-                     second_line_rtl=second_checked)
+        return two_line_message(first_line_text=first_line_text,
+                                first_line_rtl=first_checked,
+                                second_line_text=second_line_text,
+                                second_line_rtl=second_checked)
 
     except Exception as ex:
         logging.exception(ex)
 
-    return hello()
+    return two_line_message()
+
+
+@app.route("/set_horizontal_pixel", methods=['POST'])
+def set_horizontal_pixel_message():
+    logging.info('in set_horizontal_pixel_message')
+    data = request.data
+    parsed_pixel_message = json.loads(data)
+    logging.info(parsed_pixel_message)
+    return make_response()
 
 
 @app.route("/cur_img", methods=['GET', 'POST'])
