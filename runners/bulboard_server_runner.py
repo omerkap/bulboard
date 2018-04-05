@@ -48,7 +48,8 @@ def two_line_message(first_line_text='line1', first_line_rtl='', second_line_tex
 
 @app.route("/horizontal_pixel_message")
 def horizontal_pixel_message():
-    return render_template('horizontal_pixel_message.html')
+    #return render_template('horizontal_pixel_message.html', row_number=11, col_number=9*10)
+    return render_template('horizontal_pixel_message.html', row_number=17, col_number=11 * 10)
 
 
 @app.route("/one_line_message")
@@ -85,7 +86,7 @@ def set_text():
     return two_line_message()
 
 
-@app.route("/set_horizontal_pixel", methods=['POST'])
+@app.route("/set_horizontal_pixel_message", methods=['POST'])
 def set_horizontal_pixel_message():
     logging.info('in set_horizontal_pixel_message')
     data = request.data
@@ -179,12 +180,12 @@ def init_logging(level):
     root_logger.addHandler(hdlr=console_handler)
 
 
-init_logging(level=LOG_LEVEL)
-runner = DualMessageRunner()
+
 
 
 if __name__ == '__main__':
-
+    init_logging(level=LOG_LEVEL)
+    runner = DualMessageRunner()
     runner.start()
     app.run()  # don't do that, use FLASK_APP env
 

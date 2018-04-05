@@ -6826,7 +6826,7 @@ button.close {
 }
 
 
-/*  Privat styling - should be placed in another css file*/
+/*  Private styling - should be placed in another css file*/
 
 .sidebar {
     height: 100%; /* Full-height: remove this if you want "auto" height */
@@ -6840,21 +6840,32 @@ button.close {
     padding-top: 20px;
 }
 
-#pixel-message {
-    display: table;
-    border-spacing: 1px;
-    background-color: black;
-    border: 5px solid black;
+#mycontainer{
+     /*overflow: hidden; ..will introduce scroll bar when needed..*/
+     overflow: hidden;
+
 }
 
-.pixel-row {
-    display: table-row;
+#scrollable{
+    overflow: auto;
+    /*position: absolute;*/
+    width: 800px;
+    height: 650px;
 }
 
-.pixel {
-    display: table-cell;
-    background-color: white;
-    width: 40px;
-    height: 40px;
+
+#matrix {
+  /*border: 1px solid red;*/
+  margin: 0 auto;
+  padding: 5px;
 }
 
+#matrix tr, td {
+  padding: 1px;
+}
+
+#matrix button {
+  height: 30px;
+  width: 30px;
+  border: none;
+}

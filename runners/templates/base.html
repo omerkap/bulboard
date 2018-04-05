@@ -10,6 +10,7 @@
 </head>
 <body>
     <!-- Side Bar -->
+
     <div class="sidebar">
         <img id="cur_img" src="" />
     </div>
@@ -66,7 +67,7 @@
         }
 
         getCurrentImage();
-        setInterval(getCurrentImage, 200);
+        setInterval(getCurrentImage, 1000);
 
         {% block script_block %}{% endblock %}
     </script>

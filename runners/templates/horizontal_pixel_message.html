@@ -7,11 +7,23 @@
 {% block body_block %}
 
     <h1>under development</h1>
-    <div id="pixel-message">
-        <div class="pixel-row">
-            <div class="pixel" onclick="setPixelColor(this)"></div>
-            <div class="pixel" onclick="setPixelColor(this)"></div>
-            <div class="pixel" onclick="setPixelColor(this)"></div>
+
+    <div id="mycontainer">
+        <div id="scrollable">
+            <table id="matrix">
+                {% for row in range(row_number) %}
+                    <tr id="pixel_row_{{row}}">
+                        {% for col in range(col_number) %}
+                            <td>
+                                <button id=pixel_{{row}}_{{col}} onclick="setPixelColor(this)">
+                                    <span></span>
+                                </button>
+                            </td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+
+            </table>
         </div>
     </div>
 
@@ -37,18 +49,18 @@
     function sendPixelsStateToServer(){
         console.log("in sendPixelsStateToServer");
 
-        var pixelsDiv = document.getElementById("pixel-message");
-        var numOfRows = pixelsDiv.children.length;
+        var pixelsDiv = document.getElementById("matrix");
+        var numOfRows = pixelsDiv.rows.length;
         var outputArray = new Array(numOfRows);
 
         for (var i=0; i < numOfRows; i++){
-            var rowDiv = pixelsDiv.children[i];
-            var numOfPixelsInRow = rowDiv.children.length;
+            var rowDiv = pixelsDiv.rows[i];
+            var numOfPixelsInRow = rowDiv.cells.length;
             outputArray[i] = new Array(numOfPixelsInRow);
 
             for (var j=0; j < numOfPixelsInRow; j++){
-                var pixel = rowDiv.children[j];
-                var pixelColor = pixel.style.backgroundColor;
+                var pixel = rowDiv.cells[j];
+                var pixelColor = pixel.children[0].style.backgroundColor;
                 if (pixelColor == "black"){
                     outputArray[i][j] = 1;
                 }
