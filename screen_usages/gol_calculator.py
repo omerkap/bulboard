@@ -17,7 +17,7 @@ from SR_Board.sr_driver import SRDriver
 
 
 class GameOfLife(AbstractScreenUsage):
-    def __init__(self, initial_pattern):
+    def __init__(self, initial_pattern=np.zeros((17, 11))):
         self._logger = logging.getLogger(self.__class__.__name__)
         self._logger.info('initialized Game Of Life')
         self._logger.info('size: {}'.format(initial_pattern.shape))

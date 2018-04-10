@@ -11,6 +11,7 @@ from PIL import ImageFont
 from PIL import ImageDraw
 import numpy as np
 from abstract_screen_usage import AbstractScreenUsage
+from matrix_scroller import MatrixScroller
 try:
     import matplotlib.pyplot as plt
     from matplotlib import animation
@@ -20,18 +21,19 @@ import sys
 sys.path.append(r'../')
 
 
-class MessagesWriter(AbstractScreenUsage):
+class MessagesWriter(MatrixScroller):
     def __init__(self, font_path, font_size, screen_size=(17, 11), bdf=False):
         self._logger = logging.getLogger(self.__class__.__name__)
         self._logger.info('initializing {}'.format(self.__class__.__name__))
         self._logger.info('screen size: {}'.format(screen_size))
+        super(MessagesWriter, self).__init__(screen_size=screen_size)
         self._screen_size = screen_size
         self._font = None
         self._is_bdf = False
         self._font_size = None
-        self._rtl = None
-        self._text_matrix = None
-        self._scrolling_step = 0
+        #self._rtl = None
+        #self._text_matrix = None
+        #self._scrolling_step = 0
         self.set_font(font_path=font_path, font_size=font_size, bdf=bdf)
         self._logger.info('finished initializing MessagesWriter')
 
@@ -71,45 +73,10 @@ class MessagesWriter(AbstractScreenUsage):
             text_matrix = np.concatenate([top_padding_matrix, text_matrix, bottom_padding_matrix], 0)
 
         # add to text matrix an 'empty' matrix with the screen size, so when we move the text we start from clean screen
-        self._text_matrix = np.concatenate([np.zeros(self._screen_size, dtype=int), text_matrix], 1)
-        self._scrolling_step = 0
-        self._logger.debug('text size: {}'.format(self._text_matrix.shape))
-        return self._text_matrix.shape[1]
-
-    def get_next_step(self):
-        """
-        Roll the text in one pixel to the wanted direction (RTL: right, LTR: left) and return the next viewable matrix
-        :return:
-        """
-        if not self._rtl:
-            if self._scrolling_step + self._screen_size[1] <= self._text_matrix.shape[1]:
-                result = self._text_matrix[:, self._scrolling_step: self._scrolling_step + self._screen_size[1]]
-            else:
-                result = np.concatenate([
-                    self._text_matrix[:, self._scrolling_step: self._text_matrix.shape[1]],
-                    self._text_matrix[:, 0: self._screen_size[1] - (self._text_matrix.shape[1] - self._scrolling_step)]
-                ], 1)
-
-            if self._scrolling_step < self._text_matrix.shape[1]:
-                    self._scrolling_step += 1
-            else:
-                self._scrolling_step = 0
-
-        else:
-            if self._scrolling_step - self._screen_size[1] >= 0:
-                result = self._text_matrix[:, self._scrolling_step - self._screen_size[1]: self._scrolling_step]
-            else:
-                result = np.concatenate([
-                    self._text_matrix[:, self._text_matrix.shape[1] - (self._screen_size[1] - self._scrolling_step): self._text_matrix.shape[1]],
-                    self._text_matrix[:, 0: self._scrolling_step]
-                ], 1)
-
-            if self._scrolling_step == 0:
-                    self._scrolling_step = self._text_matrix.shape[1]
-            else:
-                self._scrolling_step -= 1
-
-        return result
+        self._data_matrix = np.concatenate([np.zeros(self._screen_size, dtype=int), text_matrix], 1)
+        #self._scrolling_step = 0
+        self._logger.debug('text size: {}'.format(self._data_matrix.shape))
+        return self._data_matrix.shape[1]
 
     def _str_to_pixels(self, string):
         #self._logger.info('converting {} to array'.format(string))

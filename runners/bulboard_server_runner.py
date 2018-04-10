@@ -1,15 +1,20 @@
-import threading
 import os
-import time
+
 import StringIO
 from datetime import datetime
 import numpy as np
 import logging
 import json
 from flask import Flask, url_for, render_template, request, make_response
+
+from screen_usages_orchestrator import ScreenUsagesOrchestrator
+from screen_usages.dual_line_message_writer import DualLineMessageWriter
 from screen_usages.messages_writer import MessagesWriter
-from screen_usages.disk_sapce_file_handlers import DiskSpaceRotatingFileHandler
+from screen_usages.matrix_scroller import MatrixScroller
+from screen_usages.gol_calculator import GameOfLife
+
 from SR_Board.sr_driver import SRDriver
+from screen_usages.disk_sapce_file_handlers import DiskSpaceRotatingFileHandler
 
 try:
     from matplotlib.backends.backend_agg import FigureCanvasAgg
@@ -37,8 +42,7 @@ def index():
 
 
 @app.route("/two_line_message")
-def two_line_message(first_line_text='line1', first_line_rtl='', second_line_text='line2', second_line_rtl=False):
-
+def two_line_message(first_line_text='line1', first_line_rtl='', second_line_text='line2', second_line_rtl=''):
     return render_template('2_line_message.html',
                            first_line_text=first_line_text,
                            first_line_rtl=first_line_rtl,
@@ -48,17 +52,44 @@ def two_line_message(first_line_text='line1', first_line_rtl='', second_line_tex
 
 @app.route("/horizontal_pixel_message")
 def horizontal_pixel_message():
-    #return render_template('horizontal_pixel_message.html', row_number=11, col_number=9*10)
     return render_template('horizontal_pixel_message.html', row_number=17, col_number=11 * 10)
 
 
+@app.route("/game_of_life")
+def game_of_life():
+    return render_template('game_of_life.html', row_number=17, col_number=11)
+
+
 @app.route("/one_line_message")
-def one_line_message():
-    return render_template('one_line_message.html')
+def one_line_message(message='demo message', message_rtl=''):
+    return render_template('one_line_message.html',
+                           message=message,
+                           message_rtl=message_rtl)
 
 
-@app.route("/set_text")
-def set_text():
+@app.route("/set_one_line_message_text")
+def set_one_line_message_text():
+    message = request.values['FirstLine']
+    try:
+        rtl = bool(request.values['FirstLineRtl'])
+    except Exception:
+        rtl = False
+
+    try:
+        runner.set_active_runner(runner_name='OneMessagesWriter')
+        r = runner.get_active_runner()
+        r.load_text(text=message, rtl=rtl)
+        message_rtl = 'checked' if rtl is True else ''
+        return one_line_message(message=message, message_rtl=message_rtl)
+
+    except Exception as ex:
+        logging.exception(ex)
+
+    return one_line_message()
+
+
+@app.route("/set_two_line_message_text")
+def set_two_line_message_text():
     first_line_text = request.values['FirstLine']
     try:
         first_line_rtl = bool(request.values['FirstLineRtl'])
@@ -71,8 +102,10 @@ def set_text():
         second_line_rtl = False
 
     try:
-        runner.set_text(first_line=first_line_text, second_line=second_line_text,
-                        first_line_rtl=first_line_rtl, second_line_rtl=second_line_rtl)
+        runner.set_active_runner(runner_name='DualLineMessageWriter')
+        r = runner.get_active_runner()
+        r.set_text(first_line=first_line_text, second_line=second_line_text,
+                   first_line_rtl=first_line_rtl, second_line_rtl=second_line_rtl)
         first_checked = 'checked' if first_line_rtl is True else ''
         second_checked = 'checked' if second_line_rtl is True else ''
         return two_line_message(first_line_text=first_line_text,
@@ -91,7 +124,34 @@ def set_horizontal_pixel_message():
     logging.info('in set_horizontal_pixel_message')
     data = request.data
     parsed_pixel_message = json.loads(data)
-    logging.info(parsed_pixel_message)
+    logging.debug(parsed_pixel_message)
+    rtl = True if parsed_pixel_message['rtl'] == 1 else False
+    try:
+        runner.set_active_runner(runner_name='MatrixScroller')
+        r = runner.get_active_runner()
+        m = np.array(parsed_pixel_message['outputArray'], dtype=int)
+        r.set_data_matrix(m, rtl=rtl)
+    except Exception as ex:
+        logging.exception(ex)
+
+    return make_response()
+
+
+@app.route("/set_game_of_life_initial_state", methods=['POST'])
+def set_game_of_life_initial_state():
+    logging.info('in set_game_of_life_initial_state')
+    data = request.data
+    parsed_pixel_message = json.loads(data)
+    logging.debug(parsed_pixel_message)
+
+    try:
+        runner.set_active_runner(runner_name='GameOfLife')
+        r = runner.get_active_runner()
+        m = np.array(parsed_pixel_message['outputArray'], dtype=int)
+        r.reset_initial_pattern(m)
+    except Exception as ex:
+        logging.exception(ex)
+
     return make_response()
 
 
@@ -107,58 +167,6 @@ def cur_img():
     response = make_response(png_output.getvalue())
     response.headers['Content-Type'] = 'image/png'
     return response
-
-
-class DualMessageRunner(threading.Thread):
-    def __init__(self):
-        self._logger = logging.getLogger(self.__class__.__name__)
-        super(DualMessageRunner,  self).__init__()
-        self._line_1_mw = MessagesWriter(font_path=FONT_PATH, font_size=8, screen_size=(9, 11), bdf=True)
-        self._line_2_mw = MessagesWriter(font_path=FONT_PATH, font_size=8, screen_size=(9, 11), bdf=True)
-        self._sr_driver = SRDriver(board_num_of_regs=56,
-                                   num_of_boards=4,
-                                   clk_pin=11,
-                                   store_pin=12,
-                                   data_pin=13,
-                                   index_map_file=os.path.join('..', 'SR_Board', 'index_map.csv'),
-                                   is_simulated=True)
-        self._should_run = True
-        self._current_frame = None
-        self.set_text()
-        self._logger.info('initialized {}'.format(self.__class__.__name__))
-
-    def set_text(self, first_line=' ', second_line=' ', first_line_rtl=False, second_line_rtl=False):
-
-        self._logger.info('in set_text, first_line: {}, second_line: {}, first_line_rtl: {}, second_line_rtl: {}'
-                           .format(first_line, second_line, first_line_rtl, second_line_rtl))
-        if first_line_rtl is True:
-            first_line = MessagesWriter.mirror_string(first_line)
-        if second_line_rtl is True:
-            second_line = MessagesWriter.mirror_string(second_line)
-
-        self._line_1_mw.load_text(text=first_line, rtl=first_line_rtl)
-        self._line_2_mw.load_text(text=second_line, rtl=second_line_rtl)
-
-    def kill_runner(self):
-        self._should_run = False
-
-    def get_current_frame(self):
-        return self._current_frame
-
-    def _calc_next_frame(self):
-        first_row_m = self._line_1_mw.get_next_step()
-        second_row_m = self._line_2_mw.get_next_step()
-        seperator = np.zeros((1, first_row_m.shape[1]))
-
-        m = np.concatenate([first_row_m, seperator, second_row_m], 0)
-        self._logger.debug('calculated frame with shape: {}'.format(m.shape))
-        return m.astype(dtype=int)
-
-    def run(self):
-        while self._should_run:
-            self._current_frame = self._calc_next_frame()
-            self._sr_driver.draw(pic=self._current_frame)
-            time.sleep(DELAY_BETWEEN_PIXEL_SCROLL)
 
 
 def init_logging(level):
@@ -180,12 +188,26 @@ def init_logging(level):
     root_logger.addHandler(hdlr=console_handler)
 
 
-
-
-
 if __name__ == '__main__':
     init_logging(level=LOG_LEVEL)
-    runner = DualMessageRunner()
+    sr = SRDriver(board_num_of_regs=56,
+                  num_of_boards=4,
+                  clk_pin=11,
+                  store_pin=12,
+                  data_pin=13,
+                  index_map_file=os.path.join('..', 'SR_Board', 'index_map.csv'),
+                  is_simulated=True)
+
+    runners = {
+        'DualLineMessageWriter': DualLineMessageWriter(font_path=FONT_PATH),
+        'OneMessagesWriter': MessagesWriter(font_path=FONT_PATH, font_size=17, bdf=True),
+        'MatrixScroller': MatrixScroller(),
+        'GameOfLife': GameOfLife()
+    }
+
+    runner = ScreenUsagesOrchestrator(sr_driver=sr,
+                                      screen_scroll_delay=0.2,
+                                      runners=runners)
     runner.start()
     app.run()  # don't do that, use FLASK_APP env
 

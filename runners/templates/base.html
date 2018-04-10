@@ -29,6 +29,7 @@
             <li class="{% block one_line_active_class %}{% endblock %}"><a href="{{url_for('one_line_message')}}">One Line Message</a></li>
             <li class="{% block two_line_active_class %}{% endblock %}"><a href="{{url_for('two_line_message')}}">2 Lines Message</a></li>
             <li class="{% block horizontal_pixel_active_class %}{% endblock %}"><a href="{{url_for('horizontal_pixel_message')}}">Horizontal Pixel Message</a></li>
+            <li class="{% block gol_active_class %}{% endblock %}"><a href="{{url_for('game_of_life')}}">Game Of Life</a></li>
             </ul>
         </div><!--/.nav-collapse -->
         </div>
@@ -67,7 +68,7 @@
         }
 
         getCurrentImage();
-        setInterval(getCurrentImage, 1000);
+        setInterval(getCurrentImage, 200);
 
         {% block script_block %}{% endblock %}
     </script>

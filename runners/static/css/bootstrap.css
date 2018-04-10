@@ -6867,5 +6867,6 @@ button.close {
 #matrix button {
   height: 30px;
   width: 30px;
-  border: none;
+  border: 1px solid grey;
+  background-color: white;
 }

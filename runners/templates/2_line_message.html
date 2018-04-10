@@ -6,7 +6,7 @@
 
 {% block body_block %}
 
-    <form action="/set_text">
+    <form action="/set_two_line_message_text">
     First line:
         <input type="text" name="FirstLine" value={% if first_line_text %} {{first_line_text}} {% endif %}> RTL:
         <input type="checkbox" name="FirstLineRtl" value="True" {% if first_line_rtl %} {{first_line_rtl}} {% endif %}><br>

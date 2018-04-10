@@ -1,11 +1,10 @@
 {% extends 'base.html' %}
 
-{% block title %}{{'horizontal pixel message'}}{% endblock %}
+{% block title %}{{'game of life'}}{% endblock %}
 
-{% block horizontal_pixel_active_class %} active {% endblock %}
+{% block gol_active_class %} active {% endblock %}
 
 {% block body_block %}
-
 
     <div id="mycontainer">
         <div id="scrollable">
@@ -26,7 +25,7 @@
         </div>
     </div>
 
-    RTL: <input type="checkbox" name="rtl" value="True" {% if matrix_rtl %} {{matrix_rtl}} {% endif %}><br>
+
     <button type="button" onclick="sendPixelsStateToServer()">Submit</button>
 
 
@@ -52,7 +51,6 @@
         var numOfRows = pixelsDiv.rows.length;
         var outputArray = new Array(numOfRows);
         var outputStruct = {};
-        var rtl = document.getElementsByName("rtl")[0].checked;
 
         for (var i=0; i < numOfRows; i++){
             var rowDiv = pixelsDiv.rows[i];
@@ -74,9 +72,8 @@
 
         console.log(outputArray)
         outputStruct.outputArray = outputArray;
-        outputStruct.rtl = rtl;
         $.ajax({
-                url: 'set_horizontal_pixel_message',
+                url: 'set_game_of_life_initial_state',
                 type: 'POST',
                 data: JSON.stringify(outputStruct),
                 contentType: 'application/json; charset=utf-8',
