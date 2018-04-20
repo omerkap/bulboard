@@ -1,5 +1,5 @@
+# -*- coding: utf8 -*-
 import os
-
 import StringIO
 from datetime import datetime
 import numpy as np
@@ -26,11 +26,11 @@ except ImportError as ex:
 app = Flask(__name__)
 
 # TODO: move to config file sometime
-FONT_PATH = r'/usr/share/fonts/truetype/msttcorefonts/Arial.ttf'
+ONE_LINE_FONT_FILE = r'/usr/share/fonts/truetype/msttcorefonts/Arial.ttf'
 FONT_PATH = r'../screen_usages/fonts/arcade/ARCADE.TTF' #['..', 'screen_usages', 'fonts', 'arcade', 'ARCADE.TTF'])
 FONT_PATH = r'../screen_usages/fonts/Ozone.ttf'
-FONT_PATH = r'../screen_usages/fonts/bdf/5x7.bdf'
-FONT_PATH = r'../screen_usages/fonts/bdf/6x10.bdf'
+ONE_LINE_FONT_FILE = r'../screen_usages/fonts/bdf/8x13.bdf'
+FONT_PATH = r'../screen_usages/fonts/bdf/6x9.bdf'
 
 DELAY_BETWEEN_PIXEL_SCROLL = 0.2  #[S]
 LOG_LEVEL = logging.INFO
@@ -78,6 +78,8 @@ def set_one_line_message_text():
     try:
         runner.set_active_runner(runner_name='OneMessagesWriter')
         r = runner.get_active_runner()
+        if rtl:
+            message = r.mirror_string(message)
         r.load_text(text=message, rtl=rtl)
         message_rtl = 'checked' if rtl is True else ''
         return one_line_message(message=message, message_rtl=message_rtl)
@@ -86,6 +88,12 @@ def set_one_line_message_text():
         logging.exception(ex)
 
     return one_line_message()
+
+
+@app.route("/save_current_state")
+def save_current_state():
+    runner.save_state_to_file()
+    return index()
 
 
 @app.route("/set_two_line_message_text")
@@ -178,12 +186,13 @@ def init_logging(level):
         pass
     file_name = os.path.join('logs', 'BulboardServer_{}'.format(datetime.now().strftime('%d_%m_%y__%H_%M_%S')))
     file_handler = DiskSpaceRotatingFileHandler(folder_max_size=10E6, filename=file_name, maxBytes=1E6, backupCount=10000)
-    formatter = logging.Formatter(fmt=r'%(asctime)s:%(name)s:%(levelname)s:%(message)s')
+    formatter = logging.Formatter(fmt=u'%(asctime)s:%(name)s:%(levelname)s:%(message)s')
     file_handler.setFormatter(formatter)
 
     console_handler = logging.StreamHandler()
     console_handler.setFormatter(formatter)
 
+    logging._defaultFormatter = logging.Formatter(u"%(message)s")  # so utf8 messages will not crash the logging
     root_logger.addHandler(hdlr=file_handler)
     root_logger.addHandler(hdlr=console_handler)
 
@@ -200,7 +209,7 @@ if __name__ == '__main__':
 
     runners = {
         'DualLineMessageWriter': DualLineMessageWriter(font_path=FONT_PATH),
-        'OneMessagesWriter': MessagesWriter(font_path=FONT_PATH, font_size=17, bdf=True),
+        'OneMessagesWriter': MessagesWriter(font_path=ONE_LINE_FONT_FILE, font_size=1, screen_size=(17, 11), bdf=True),
         'MatrixScroller': MatrixScroller(),
         'GameOfLife': GameOfLife()
     }

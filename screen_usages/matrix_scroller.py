@@ -50,3 +50,14 @@ class MatrixScroller(AbstractScreenUsage):
                 self._scrolling_step -= 1
 
         return result
+
+    def load_state(self, serialized_state):
+        self._data_matrix = serialized_state['data_matrix']
+        self._rtl = serialized_state['rtl']
+
+    def serialize_state(self):
+        container = dict()
+        container['data_matrix'] = self._data_matrix
+        container['rtl'] = self._rtl
+        return container
+

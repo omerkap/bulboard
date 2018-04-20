@@ -70,7 +70,7 @@ class BdfFont(object):
 
     def _hex_list_to_ndarray(self, l):
         #arr = np.zeros(self._font_size, dtype=int)
-        arr = np.zeros((10, 8), dtype=int)
+        arr = np.zeros((self._font_size[1], 8), dtype=int)
         for row_num, row in enumerate(l):
             bin_str = '{:08b}'.format(int(row, 16))
             bin_int = [int(c) for c in bin_str]

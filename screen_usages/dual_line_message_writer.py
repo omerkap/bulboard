@@ -18,7 +18,7 @@ class DualLineMessageWriter(AbstractScreenUsage):
 
     def set_text(self, first_line=' ', second_line=' ', first_line_rtl=False, second_line_rtl=False):
 
-        self._logger.info('in set_text, first_line: {}, second_line: {}, first_line_rtl: {}, second_line_rtl: {}'
+        self._logger.info(u'in set_text, first_line: {}, second_line: {}, first_line_rtl: {}, second_line_rtl: {}'
                            .format(first_line, second_line, first_line_rtl, second_line_rtl))
         if first_line_rtl is True:
             first_line = MessagesWriter.mirror_string(first_line)
@@ -36,6 +36,18 @@ class DualLineMessageWriter(AbstractScreenUsage):
         m = np.concatenate([first_row_m, seperator, second_row_m], 0)
         self._logger.debug('calculated frame with shape: {}'.format(m.shape))
         return m.astype(dtype=int)
+
+    def serialize_state(self):
+        container = dict()
+        line_1_data = self._line_1_mw.serialize_state()
+        line_2_data = self._line_2_mw.serialize_state()
+        container['line_1_data'] = line_1_data
+        container['line_2_data'] = line_2_data
+        return container
+
+    def load_state(self, serialized_state):
+        self._line_1_mw.load_state(serialized_state['line_1_data'])
+        self._line_2_mw.load_state(serialized_state['line_2_data'])
 
 
 

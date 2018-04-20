@@ -1,9 +1,10 @@
 import logging
-from disk_sapce_file_handlers import DiskSpaceRotatingFileHandler
 import numpy as np
 from datetime import datetime
 import os
 import time
+
+from disk_sapce_file_handlers import DiskSpaceRotatingFileHandler
 from abstract_screen_usage import AbstractScreenUsage
 
 try:
@@ -21,13 +22,15 @@ class GameOfLife(AbstractScreenUsage):
         self._logger = logging.getLogger(self.__class__.__name__)
         self._logger.info('initialized Game Of Life')
         self._logger.info('size: {}'.format(initial_pattern.shape))
-        self._state = initial_pattern
+        self._initial_pattern = initial_pattern
+        self._state = self._initial_pattern
         self._size = self._state.shape
         self._step = 0
 
     def reset_initial_pattern(self, initial_pattern):
         self._logger.warning('resetting initial pattern, new size: {}'.format(initial_pattern.shape))
         self._state = initial_pattern
+        self._initial_pattern = initial_pattern
         self._size = self._state.shape
         self._step = 0
 
@@ -91,6 +94,16 @@ class GameOfLife(AbstractScreenUsage):
         flattened = neighbors_matrix.ravel()
 
         return np.concatenate((flattened[0:4], flattened[5:9]))
+
+    def load_state(self, serialized_state):
+        self._initial_pattern = serialized_state['initial_pattern']
+        self._state = self._initial_pattern
+        self._step = 0
+
+    def serialize_state(self):
+        container = dict()
+        container['initial_pattern'] = self._initial_pattern
+        return container
 
     @property
     def state(self):

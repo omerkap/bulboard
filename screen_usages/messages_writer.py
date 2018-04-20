@@ -31,9 +31,6 @@ class MessagesWriter(MatrixScroller):
         self._font = None
         self._is_bdf = False
         self._font_size = None
-        #self._rtl = None
-        #self._text_matrix = None
-        #self._scrolling_step = 0
         self.set_font(font_path=font_path, font_size=font_size, bdf=bdf)
         self._logger.info('finished initializing MessagesWriter')
 
@@ -62,6 +59,7 @@ class MessagesWriter(MatrixScroller):
         :return: the length of the full text matrix
         """
         self._rtl = rtl
+        self._logger.info(u'trying to load text: {}'.format(text))
         text_matrix = self._str_to_pixels(string=text)
         if text_matrix.shape[0] < self._screen_size[0]:
             self._logger.debug('text is shorter than screen, padding towards downside')
@@ -74,16 +72,17 @@ class MessagesWriter(MatrixScroller):
 
         # add to text matrix an 'empty' matrix with the screen size, so when we move the text we start from clean screen
         self._data_matrix = np.concatenate([np.zeros(self._screen_size, dtype=int), text_matrix], 1)
-        #self._scrolling_step = 0
         self._logger.debug('text size: {}'.format(self._data_matrix.shape))
         return self._data_matrix.shape[1]
 
     def _str_to_pixels(self, string):
-        #self._logger.info('converting {} to array'.format(string))
         string_array = np.zeros((self._font_size, 1), dtype=int)  # 0 column
+        #chars_matrixs = []
         for c in string:
             arr = self._char_to_pixels(c)
+            #chars_matrixs.append(arr)
             string_array = np.concatenate([string_array, arr], 1)
+        #print(1)
         return self._trim(string_array)
 
     def _char_to_pixels(self, char):
@@ -93,7 +92,7 @@ class MessagesWriter(MatrixScroller):
         if self._is_bdf:
             return self._font.char_to_matrix(char)
         w, h = self._font.getsize(char)
-        self._logger.debug('char: {}, w: {}, h: {}'.format(char, w, h))
+        self._logger.debug(u'char: {}, w: {}, h: {}'.format(char, w, h))
         image = Image.new('L', (w, h), 1)
         draw = ImageDraw.Draw(image)
         draw.text((0, 0), char, font=self._font)
